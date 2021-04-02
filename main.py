@@ -1,7 +1,7 @@
 from flask import Flask, jsonify
-import firestore
 import firebase_admin
 from firebase_admin import credentials
+from google.cloud import firestore
 
 default_app = firebase_admin.initialize_app()
 db = firestore.Client()
@@ -22,14 +22,14 @@ def my_api():
 
 @app.route('/v2')
 def gcp_api():
-    my_quiz = db.collection(u'quiz')
-    docs = my_quiz.stream()
-    q_one = docs.one.question
-    # for doc in docs:
-    #     print(f'{doc.id} => {doc.to_dict()}')
-    return jsonify(q_one)
+    my_quiz = db.collection(u'quiz').document(u'one')
+    doc = [(my_quiz.get()).to_dict()]
+    quiz_all = db.collection(u'quiz')
+    docs = quiz_all.stream()
+    collection=[]
+    for doc in docs:
+        collection.append(doc.to_dict())
+    return jsonify(collection)
 
-
-# app.run(debug=True)
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=8080, debug=True, threaded=True)content_copy
+    app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
